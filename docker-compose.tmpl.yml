@@ -1,0 +1,27 @@
+version: '3.5'
+
+services:
+  user:
+    image: ${IMAGE_NAME}:${IMAGE_TAG:-latest}
+    environment:
+      - SPRING_PROFILES_ACTIVE
+      - SPRING_DATASOURCE_USERNAME
+      - SPRING_DATASOURCE_PASSWORD
+      - OAUTH_CLIENT_ID
+      - OAUTH_CLIENT_SECRET
+      - JAVA_OPTS=-Xmx256m -Xss256m
+    networks:
+      - postgres-net
+      - redmic-net
+    healthcheck:
+      test: wget --spider -S -t 3 http://localhost:${MICROSERVICE_PORT}/api/${MICROSERVICE_NAME}/actuator/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 2m
+
+networks:
+  postgres-net:
+    external: true
+  redmic-net:
+    external: true
