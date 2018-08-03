@@ -1,22 +1,36 @@
 package es.redmic.user.manager.utils;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.Map;
 
-import javax.validation.Constraint;
-import javax.validation.Payload;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
-@Target({ ElementType.METHOD, ElementType.FIELD })
-@Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = RecaptchaValidatorImpl.class)
-public @interface RecaptchaValidator {
+import es.redmic.exception.user.RecaptchaNotValidException;
+import es.redmic.utils.httpclient.HttpClient;
 
-	String message() default "Recaptcha not correct";
+@Component
+public class RecaptchaValidator {
 
-	Class<?>[] groups() default {};
+	@Value("${recaptcha.secret}")
+	String RECAPTCHA_SECRET;
 
-	Class<? extends Payload>[] payload() default {};
+	HttpClient client = new HttpClient();
 
+	@SuppressWarnings("unchecked")
+	public void checkRecaptcha(String reCaptcha) {
+
+		if (reCaptcha == null) {
+			throw new RecaptchaNotValidException();
+		}
+
+		String url = "https://www.google.com/recaptcha/api/siteverify?secret=" + RECAPTCHA_SECRET + "&response="
+				+ reCaptcha;
+
+		Map<String, Object> result = (Map<String, Object>) client.get(url, Map.class);
+
+		Boolean success = (Boolean) result.get("success");
+		if (!success) {
+			throw new RecaptchaNotValidException();
+		}
+	}
 }

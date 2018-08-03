@@ -28,6 +28,7 @@ import es.redmic.user.manager.repository.AccessRepository;
 import es.redmic.user.manager.repository.UserRepository;
 import es.redmic.user.manager.repository.UserSectorRepository;
 import es.redmic.user.manager.utils.PasswordManager;
+import es.redmic.user.manager.utils.RecaptchaValidator;
 
 @Service
 public class UserService extends UserBaseService<User, UserDTO> {
@@ -47,12 +48,19 @@ public class UserService extends UserBaseService<User, UserDTO> {
 	UserRepository repository;
 
 	@Autowired
+	RecaptchaValidator recaptchaValidator;
+
+	@Autowired
 	public UserService(UserRepository repository) {
 		super(repository);
 		this.repository = repository;
 	}
 
 	public void save(UserRegisterDTO dto) {
+
+		// Comprueba que el recaptcha es válido
+		recaptchaValidator.checkRecaptcha(dto.getReCaptcha());
+
 		// count(*) es necesario cuando la funci�n no devuelve nada
 		String queryString = "SELECT count(*) from app.register(?, ?, ?, ?)";
 		ArrayList<Object> parameters = new ArrayList<Object>();

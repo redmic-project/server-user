@@ -3,7 +3,7 @@ package es.redmic.user.unit.manager.dto;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import es.redmic.user.manager.dto.UserRegisterDTO;
 
@@ -23,8 +23,6 @@ public class UserRegisterDTOTest extends DTOBaseTest<UserRegisterDTO> {
 
 		dto.setAccept(true);
 		dto.setPassword("password");
-		
-		addIgnoreError("reCaptcha", "Recaptcha not correct");
 	}
 
 	@Test
@@ -32,12 +30,12 @@ public class UserRegisterDTOTest extends DTOBaseTest<UserRegisterDTO> {
 
 		checkDTOHasNoError(dto);
 	}
-	
+
 	@Test
 	public void validationDTO_ReturnSizeError_IfPasswordHasInsufficientLength() {
 
 		dto.setPassword("ii");
-		
+
 		checkDTOHasError(dto, "password", "{javax.validation.constraints.Size.message}");
 	}
 
@@ -51,7 +49,7 @@ public class UserRegisterDTOTest extends DTOBaseTest<UserRegisterDTO> {
 
 	@Test
 	public void validationDTO_ReturnAssertTrueError_IfValueIsFalse() {
-		
+
 		dto.setAccept(false);
 
 		checkDTOHasError(dto, "accept", "{javax.validation.constraints.AssertTrue.message}");

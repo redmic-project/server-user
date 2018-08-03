@@ -4,11 +4,14 @@ services:
   user:
     image: ${IMAGE_NAME}:${IMAGE_TAG:-latest}
     environment:
+      - MICROSERVICE_NAME
+      - MICROSERVICE_PORT
       - SPRING_PROFILES_ACTIVE
       - SPRING_DATASOURCE_USERNAME
       - SPRING_DATASOURCE_PASSWORD
       - OAUTH_CLIENT_ID
       - OAUTH_CLIENT_SECRET
+      - RECAPTCHA_SECRET
       - JAVA_OPTS=-Xmx256m -Xss256m
     networks:
       - postgres-net

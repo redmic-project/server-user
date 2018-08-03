@@ -4,8 +4,6 @@ import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-import es.redmic.user.manager.utils.RecaptchaValidator;
-
 public class UserRegisterDTO extends UserDTO {
 
 	@NotNull
@@ -16,7 +14,6 @@ public class UserRegisterDTO extends UserDTO {
 	private Boolean accept;
 
 	@NotNull
-	@RecaptchaValidator
 	private String reCaptcha;
 
 	public UserRegisterDTO() {
