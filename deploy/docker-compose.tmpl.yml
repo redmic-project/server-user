@@ -12,7 +12,7 @@ services:
       - OAUTH_CLIENT_ID
       - OAUTH_CLIENT_SECRET
       - RECAPTCHA_SECRET
-      - JAVA_OPTS=-XX:MaxRAMFraction=1
+      - JAVA_OPTS=-XX:MaxRAMFraction=2
     networks:
       - postgres-net
       - redmic-net
