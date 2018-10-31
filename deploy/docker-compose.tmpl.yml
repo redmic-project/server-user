@@ -12,10 +12,11 @@ services:
       - OAUTH_CLIENT_ID
       - OAUTH_CLIENT_SECRET
       - RECAPTCHA_SECRET
-      - JAVA_OPTS=-Xmx256m -Xss256m
+      - JAVA_OPTS=-XX:MaxRAMFraction=2
     networks:
       - postgres-net
       - redmic-net
+      - traefik-net
     healthcheck:
       test: wget --spider -S -t 3 http://localhost:${MICROSERVICE_PORT}/api/${MICROSERVICE_NAME}/actuator/health
       interval: 30s
@@ -27,4 +28,6 @@ networks:
   postgres-net:
     external: true
   redmic-net:
+    external: true
+  traefik-net:
     external: true

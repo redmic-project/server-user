@@ -2,10 +2,6 @@ version: '3.5'
 
 services:
   user:
-    ports:
-      - ${MICROSERVICE_PORT}
-    networks:
-      - traefik-net
     deploy:
       mode: replicated
       replicas: 1
@@ -19,8 +15,11 @@ services:
           - node.role == worker
       restart_policy:
         condition: on-failure
-        max_attempts: 3
-
-networks:
-  traefik-net:
-    external: true
+        delay: 1m
+        window: 3m
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          memory: 410M
