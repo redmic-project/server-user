@@ -59,8 +59,7 @@ public class Oauth2SecurityConfiguration {
 
 		@Override
 		public void configure(ResourceServerSecurityConfigurer resources) {
-			resources.tokenServices(tokenService())
-					.resourceId(SPARKLR_RESOURCE_ID);
+			resources.tokenServices(tokenService()).resourceId(SPARKLR_RESOURCE_ID);
 		}
 
 		@Override
@@ -68,6 +67,7 @@ public class Oauth2SecurityConfiguration {
 			// @formatter:off
 
 			http.anonymous().and().authorizeRequests().antMatchers("/user/actuator/**").permitAll()
+					.antMatchers(HttpMethod.OPTIONS, "/**/").permitAll()
 					.antMatchers(HttpMethod.GET, "/user/profile/").permitAll()
 					.antMatchers(HttpMethod.GET, "/user/modules/openmodules/").permitAll()
 					.antMatchers(HttpMethod.POST, "/user/register/**/").permitAll()
