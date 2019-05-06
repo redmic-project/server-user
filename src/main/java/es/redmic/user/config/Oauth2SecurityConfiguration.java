@@ -65,8 +65,8 @@ public class Oauth2SecurityConfiguration {
 		@Override
 		public void configure(HttpSecurity http) throws Exception {
 			// @formatter:off
-
-			http.anonymous().and().authorizeRequests().antMatchers("/user/actuator/**").permitAll()
+			
+			http.cors().and().anonymous().and().authorizeRequests().antMatchers("/user/actuator/**").permitAll()
 					.antMatchers(HttpMethod.OPTIONS, "/**/").permitAll()
 					.antMatchers(HttpMethod.GET, "/user/profile/").permitAll()
 					.antMatchers(HttpMethod.GET, "/user/modules/openmodules/").permitAll()
