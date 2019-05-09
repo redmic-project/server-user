@@ -13,7 +13,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>user</artifactId>
 	<packaging>jar</packaging>
-	<version>0.8.0</version>
+	<version>0.8.0-feature-corsAllowed</version>
 	<name>User</name>
 	<description>Account management and user services</description>
 	
