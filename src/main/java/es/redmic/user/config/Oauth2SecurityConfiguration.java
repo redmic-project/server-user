@@ -59,15 +59,14 @@ public class Oauth2SecurityConfiguration {
 
 		@Override
 		public void configure(ResourceServerSecurityConfigurer resources) {
-			resources.tokenServices(tokenService())
-					.resourceId(SPARKLR_RESOURCE_ID);
+			resources.tokenServices(tokenService()).resourceId(SPARKLR_RESOURCE_ID);
 		}
 
 		@Override
 		public void configure(HttpSecurity http) throws Exception {
 			// @formatter:off
-
-			http.anonymous().and().authorizeRequests().antMatchers("/user/actuator/**").permitAll()
+			
+			http.cors().and().anonymous().and().authorizeRequests().antMatchers("/user/actuator/**").permitAll()
 					.antMatchers(HttpMethod.GET, "/user/profile/").permitAll()
 					.antMatchers(HttpMethod.GET, "/user/modules/openmodules/").permitAll()
 					.antMatchers(HttpMethod.POST, "/user/register/**/").permitAll()
@@ -80,5 +79,4 @@ public class Oauth2SecurityConfiguration {
 					"#oauth2.hasScope('read') or #oauth2.hasScope('write') and hasAnyRole('ROLE_ADMINISTRATOR', 'ROLE_OAG', 'ROLE_COLLABORATOR', 'ROLE_USER')");
 		}
 	}
-
 }
