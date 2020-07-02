@@ -69,6 +69,16 @@ variables:
         -o sql/user_database_data_test.sql \
         "https://gitlab.com/api/v4/snippets/${USER_DATABASE_DATA_TEST_SNIPPET_ID}/raw";
     - >
+      RETRIES=5;
+      until docker exec postgres psql -h localhost \
+          -d redmic \
+          -U ${SPRING_DATASOURCE_USERNAME} \
+          -c 'select 1' > /dev/null 2>&1 || [ $RETRIES -eq 0 ];
+      do \
+          RETRIES=$((RETRIES-=1)) \
+          echo "Waiting for postgres server, ${RETRIES} remaining attempts..." \
+          sleep 1;
+      done;
       docker exec postgres psql -h localhost \
         -d redmic \
         -U ${SPRING_DATASOURCE_USERNAME} \
