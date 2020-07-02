@@ -37,6 +37,7 @@ variables:
     OAUTH_IMAGE_TAG: latest
     DIND_IMAGE_NAME: docker
     DIND_IMAGE_TAG: dind
+    DOCKER_HOST: tcp://docker:2375
   services:
     - ${DIND_IMAGE_NAME}:${DIND_IMAGE_TAG}
   before_script:
