@@ -35,6 +35,10 @@ variables:
     PGPASSWORD: ${SPRING_DATASOURCE_PASSWORD}
     OAUTH_IMAGE_NAME: registry.gitlab.com/redmic-project/server/oauth
     OAUTH_IMAGE_TAG: latest
+    DIND_IMAGE_NAME: docker
+    DIND_IMAGE_TAG: dind
+  services:
+    - ${DIND_IMAGE_NAME}:${DIND_IMAGE_TAG}
   before_script:
     - >
       mkdir -p sql;
