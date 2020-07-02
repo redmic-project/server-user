@@ -69,7 +69,7 @@ variables:
         -o sql/user_database_data_test.sql \
         "https://gitlab.com/api/v4/snippets/${USER_DATABASE_DATA_TEST_SNIPPET_ID}/raw";
     - >
-      RETRIES=5;
+      RETRIES=10;
       until docker exec postgres psql -h localhost \
           -d redmic \
           -U ${SPRING_DATASOURCE_USERNAME} \
