@@ -30,9 +30,9 @@ variables:
   variables:
     POSTGRES_IMAGE_TAG: 10.13-alpine
     POSTGRES_DB: redmic
-    POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME}
-    POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-    PGPASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: password
+    PGPASSWORD: ${POSTGRES_PASSWORD}
     OAUTH_IMAGE_NAME: registry.gitlab.com/redmic-project/server/oauth
     OAUTH_IMAGE_TAG: latest
     DIND_IMAGE_NAME: docker
@@ -72,7 +72,7 @@ variables:
       RETRIES=10;
       until docker exec postgres psql -h localhost \
           -d redmic \
-          -U ${SPRING_DATASOURCE_USERNAME} \
+          -U ${POSTGRES_USER} \
           -c 'select 1' > /dev/null 2>&1 || [ $RETRIES -eq 0 ];
       do \
           RETRIES=$((RETRIES-=1)) \
@@ -81,19 +81,23 @@ variables:
       done;
       docker exec postgres psql -h localhost \
         -d redmic \
-        -U ${SPRING_DATASOURCE_USERNAME} \
+        -U ${POSTGRES_USER} \
         -f /sql/oauth_database_structure_test.sql;
       docker exec postgres psql -h localhost \
         -d redmic \
-        -U ${SPRING_DATASOURCE_USERNAME} \
+        -U ${POSTGRES_USER} \
+        -c "ALTER ROLE ${SPRING_DATASOURCE_USERNAME} WITH PASSWORD '${SPRING_DATASOURCE_PASSWORD}'";
+      docker exec postgres psql -h localhost \
+        -d redmic \
+        -U ${POSTGRES_USER} \
         -f /sql/oauth_database_data_test.sql;
       docker exec postgres psql -h localhost \
         -d redmic \
-        -U ${SPRING_DATASOURCE_USERNAME} \
+        -U ${POSTGRES_USER} \
         -f /sql/user_database_structure_test.sql;
       docker exec postgres psql -h localhost \
         -d redmic \
-        -U ${SPRING_DATASOURCE_USERNAME} \
+        -U ${POSTGRES_USER} \
         -f /sql/user_database_data_test.sql;
     - >
       docker run -d --rm --name oauth \
