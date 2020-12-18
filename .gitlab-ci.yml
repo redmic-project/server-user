@@ -23,17 +23,13 @@ stages:
   - post-package
   - deploy
 
-variables:
-  PROJECT_PARENT_NAME: user
-
 .maven-build:
   variables:
     POSTGRES_IMAGE_TAG: 10.13-alpine
     POSTGRES_DB: redmic
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: password
-    PGPASSWORD: ${POSTGRES_PASSWORD}
-    OAUTH_IMAGE_NAME: registry.gitlab.com/redmic-project/server/oauth
+    OAUTH_IMAGE_NAME: registry.gitlab.com/redmic-project/server/oauth/master
     OAUTH_IMAGE_TAG: latest
     DIND_IMAGE_NAME: docker
     DIND_IMAGE_TAG: dind
@@ -117,7 +113,6 @@ variables:
 
 .deploy:
   variables:
-    STACK: ${PROJECT_PARENT_NAME}
-    SERVICES_TO_CHECK: ${PROJECT_PARENT_NAME}_${CI_PROJECT_NAME}
+    STACK: user
   environment:
     url: https://${PUBLIC_HOSTNAME}/api/${CI_PROJECT_NAME}
