@@ -11,32 +11,110 @@ include:
   - project: 'redmic-project/gitlab-ci-templates'
     ref: master
     file: '/deployment.yml'
+  - project: 'redmic-project/gitlab-ci-templates'
+    ref: master
+    file: '/deployment-custom-image.yml'
 
 stages:
   - build
   - license-list
+  - pre-package
   - package
-  - test-package
+  - post-package
   - deploy
 
-variables:
-  DOCKER_BUILD_ARGS: --build-arg PARENT_IMAGE_NAME=${REDMIC_SERVER_IMAGE_NAME} --build-arg PARENT_IMAGE_TAG=${REDMIC_SERVER_IMAGE_TAG}
-  STACK: user
+.maven-build:
+  variables:
+    POSTGRES_IMAGE_TAG: 10.13-alpine
+    POSTGRES_DB: redmic
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: password
+    OAUTH_IMAGE_NAME: registry.gitlab.com/redmic-project/server/oauth/master
+    OAUTH_IMAGE_TAG: latest
+    DIND_IMAGE_NAME: docker
+    DIND_IMAGE_TAG: dind
+    DOCKER_HOST: tcp://docker:2375
+    SPRING_DATASOURCE_URL: jdbc:postgresql://docker:5432/redmic?currentSchema=app
+    OAUTH_SERVER: http://docker:8081
+  services:
+    - ${DIND_IMAGE_NAME}:${DIND_IMAGE_TAG}
+  before_script:
+    - >
+      mkdir -p sql;
+      chmod -R 755 sql;
+      docker network create test;
+    - >
+      docker run -d --rm --name postgres \
+        -p 5432:5432 \
+        --network test \
+        --network-alias db \
+        -e POSTGRES_DB \
+        -e POSTGRES_USER \
+        -e POSTGRES_PASSWORD \
+        -v $(pwd)/sql:/sql \
+        postgres:${POSTGRES_IMAGE_TAG};
+    - >
+      curl -s --header "PRIVATE-TOKEN: ${GITLAB_TOKEN_READ_API}" \
+        -o sql/oauth_database_structure_test.sql \
+        "https://gitlab.com/api/v4/snippets/${OAUTH_DATABASE_STRUCTURE_TEST_SNIPPET_ID}/raw";
+      curl -s --header "PRIVATE-TOKEN: ${GITLAB_TOKEN_READ_API}" \
+        -o sql/oauth_database_data_test.sql \
+        "https://gitlab.com/api/v4/snippets/${OAUTH_DATABASE_DATA_TEST_SNIPPET_ID}/raw";
+      curl -s --header "PRIVATE-TOKEN: ${GITLAB_TOKEN_READ_API}" \
+        -o sql/user_database_structure_test.sql \
+        "https://gitlab.com/api/v4/snippets/${USER_DATABASE_STRUCTURE_TEST_SNIPPET_ID}/raw";
+      curl -s --header "PRIVATE-TOKEN: ${GITLAB_TOKEN_READ_API}" \
+        -o sql/user_database_data_test.sql \
+        "https://gitlab.com/api/v4/snippets/${USER_DATABASE_DATA_TEST_SNIPPET_ID}/raw";
+    - >
+      RETRIES=10;
+      until docker exec postgres psql -h localhost \
+          -d redmic \
+          -U ${POSTGRES_USER} \
+          -c 'select 1' > /dev/null 2>&1 || [ $RETRIES -eq 0 ];
+      do \
+          RETRIES=$((RETRIES-=1)) \
+          echo "Waiting for postgres server, ${RETRIES} remaining attempts..." \
+          sleep 1;
+      done;
+      docker exec postgres psql -h localhost \
+        -d redmic \
+        -U ${POSTGRES_USER} \
+        -f /sql/oauth_database_structure_test.sql;
+      docker exec postgres psql -h localhost \
+        -d redmic \
+        -U ${POSTGRES_USER} \
+        -c "ALTER ROLE ${SPRING_DATASOURCE_USERNAME} WITH PASSWORD '${SPRING_DATASOURCE_PASSWORD}'";
+      docker exec postgres psql -h localhost \
+        -d redmic \
+        -U ${POSTGRES_USER} \
+        -f /sql/oauth_database_data_test.sql;
+      docker exec postgres psql -h localhost \
+        -d redmic \
+        -U ${POSTGRES_USER} \
+        -f /sql/user_database_structure_test.sql;
+      docker exec postgres psql -h localhost \
+        -d redmic \
+        -U ${POSTGRES_USER} \
+        -f /sql/user_database_data_test.sql;
+    - >
+      docker run -d --rm --name oauth \
+        -p 8081:8081 \
+        --network test \
+        -e SPRING_PROFILES_ACTIVE=dev \
+        -e SPRING_DATASOURCE_USERNAME \
+        -e SPRING_DATASOURCE_PASSWORD \
+        ${OAUTH_IMAGE_NAME}:${OAUTH_IMAGE_TAG};
+  after_script:
+    - docker stop oauth postgres
+
+.docker-build:
+  variables:
+    DBLD_PARENT_IMAGE_NAME: ${REDMIC_SERVER_IMAGE_NAME}
+    DBLD_PARENT_IMAGE_TAG: ${REDMIC_SERVER_IMAGE_TAG}
 
 .deploy:
-  script:
-    - >
-      deploy.sh IMAGE_NAME=${IMAGE_NAME} IMAGE_TAG=${IMAGE_TAG} COMPOSE_FILE=${COMPOSE_FILE}
-      SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE} SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
-      SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD} OAUTH_CLIENT_ID=${OAUTH_CLIENT_ID}
-      OAUTH_CLIENT_SECRET=${OAUTH_CLIENT_SECRET} RECAPTCHA_SECRET=${RECAPTCHA_SECRET} PUBLIC_HOSTNAME=${PUBLIC_HOSTNAME}
+  variables:
+    STACK: user
   environment:
     url: https://${PUBLIC_HOSTNAME}/api/${CI_PROJECT_NAME}
-
-.deploy-development:
-  variables:
-    SPRING_PROFILES_ACTIVE: pre
-
-.deploy-production:
-  variables:
-    SPRING_PROFILES_ACTIVE: prod
