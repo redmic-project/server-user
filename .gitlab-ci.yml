@@ -117,5 +117,3 @@ stages:
 .deploy:
   variables:
     STACK: user
-  environment:
-    url: https://${PUBLIC_HOSTNAME}/api/${CI_PROJECT_NAME}
