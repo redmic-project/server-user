@@ -42,7 +42,7 @@ public class SupersetEmbeddedController {
 	}
 
 	@RequestMapping(value = "/get-token/{dashboardid}", method = RequestMethod.GET)
-	public String getToken(@PathVariable("dashboardid") String dashboardid) {
+	public Object getToken(@PathVariable("dashboardid") String dashboardid) {
 
 		return service.getToken(dashboardid);
 	}
