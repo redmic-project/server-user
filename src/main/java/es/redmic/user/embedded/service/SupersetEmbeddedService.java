@@ -67,14 +67,9 @@ public class SupersetEmbeddedService {
 
 	List<MediaType> acceptableMediaTypes = new ArrayList<>();
 
-	HttpHeaders headers = new HttpHeaders();
-
 	public SupersetEmbeddedService() {
 
 		acceptableMediaTypes.add(MediaType.APPLICATION_JSON);
-
-		headers.setContentType(MediaType.APPLICATION_JSON);
-		headers.setAccept(acceptableMediaTypes);
 	}
 
 	public Object getToken(String dashboardid) {
@@ -114,11 +109,11 @@ public class SupersetEmbeddedService {
 
 		String body = "{\"resources\": [{\"id\": \"" + dashboardid + "\", \"type\": \"dashboard\"}], \"rls\": [], \"user\": {\"username\": \"" + user + "\"}}";
 
-		HttpHeaders authHeaders = headers;
-		authHeaders.set(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
-		HttpEntity<String> request = new HttpEntity<>(body, authHeaders);
-
-		System.out.println("Hacieniendo petición de token en URL " + url + " con body " + body);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.setAccept(acceptableMediaTypes);
+		headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
+		HttpEntity<String> request = new HttpEntity<>(body, headers);
 
 		return restTemplate.postForObject(url, request, String.class);
 	}
@@ -133,10 +128,10 @@ public class SupersetEmbeddedService {
 			+ "\", \"password\": \"" + password
 			+ "\", \"provider\": \"db\", \"refresh\": \"true\"}";
 
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.setAccept(acceptableMediaTypes);
 		HttpEntity<String> request = new HttpEntity<>(body, headers);
-
-		System.out.println("Petición de login en URL " + url + " con body " + "{\"username\": \"" + user
-			+ "\", \"password\": \"xxx\", \"provider\": \"db\", \"refresh\": \"true\"}");
 
 		String response = restTemplate.postForObject(url, request, String.class);
 
