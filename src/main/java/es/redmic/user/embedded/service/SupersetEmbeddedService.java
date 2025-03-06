@@ -112,7 +112,7 @@ public class SupersetEmbeddedService {
 
 		RestTemplate restTemplate = new RestTemplate();
 
-		String body = "{'resources': [{'id': " + dashboardid + ", 'type': 'dashboard'}], 'rls': [], 'user': {'username': '" + user + "'}}";
+		String body = "{\"resources\": [{\"id\": \"" + dashboardid + "\", \"type\": \"dashboard\"}], \"rls\": [], \"user\": {\"username\": \"" + user + "\"}}";
 
 		HttpHeaders authHeaders = headers;
 		authHeaders.set(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
@@ -129,14 +129,14 @@ public class SupersetEmbeddedService {
 
 		RestTemplate restTemplate = new RestTemplate();
 
-		String body = "{'username': '" + user
-			+ "', 'password': '" + password
-			+ "', 'provider': 'db', 'refresh': 'true'}";
+		String body = "{\"username\": \"" + user
+			+ "\", \"password\": \"" + password
+			+ "\", \"provider\": \"db\", \"refresh\": \"true\"}";
 
 		HttpEntity<String> request = new HttpEntity<>(body, headers);
 
-		System.out.println("Hacieniendo petición de login en URL " + url + " con body " + "{'username': '" + user
-			+ "', 'password': 'xxx', 'provider': 'db', 'refresh': 'true'}");
+		System.out.println("Petición de login en URL " + url + " con body " + "{\"username\": \"" + user
+			+ "\", \"password\": \"xxx\", \"provider\": \"db\", \"refresh\": \"true\"}");
 
 		String response = restTemplate.postForObject(url, request, String.class);
 
