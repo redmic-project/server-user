@@ -69,6 +69,7 @@ public class Oauth2SecurityConfiguration {
 			http.cors().and().anonymous().and().authorizeRequests().antMatchers("/user/actuator/**").permitAll()
 					.antMatchers(HttpMethod.GET, "/user/profile/").permitAll()
 					.antMatchers(HttpMethod.GET, "/user/modules/openmodules/").permitAll()
+					.antMatchers(HttpMethod.GET, "/user/superset/get-token/**").permitAll()
 					.antMatchers(HttpMethod.POST, "/user/register/**/").permitAll()
 					.antMatchers(HttpMethod.POST, "/user/feedback/").permitAll()
 					.antMatchers(HttpMethod.POST, "/user/profile/resettingRequest/**/").permitAll()
