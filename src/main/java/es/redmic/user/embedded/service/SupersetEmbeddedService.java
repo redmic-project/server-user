@@ -48,16 +48,16 @@ public class SupersetEmbeddedService {
 	@Value("${property.SUPERSET_API_BASE_PATH}")
 	private String supersetApiBasePath;
 
-	@Value("${property.SUPERSET_PRIVATE_DASHBOARD_USERNAME}")
+	@Value("${SUPERSET_PRIVATE_DASHBOARD_USERNAME}")
 	private String supersetPrivateDashboardUsername;
 
-	@Value("${property.SUPERSET_PRIVATE_DASHBOARD_PASSWORD}")
+	@Value("${SUPERSET_PRIVATE_DASHBOARD_PASSWORD}")
 	private String supersetPrivateDashboardPassword;
 
-	@Value("${property.SUPERSET_PUBLIC_DASHBOARD_USERNAME}")
+	@Value("${SUPERSET_PUBLIC_DASHBOARD_USERNAME}")
 	private String supersetPublicDashboardUsername;
 
-	@Value("${property.SUPERSET_PUBLIC_DASHBOARD_PASSWORD}")
+	@Value("${SUPERSET_PUBLIC_DASHBOARD_PASSWORD}")
 	private String supersetPublicDashboardPassword;
 
 	@Autowired
