@@ -48,22 +48,8 @@ public class SupersetEmbeddedService {
 	@Value("${property.SUPERSET_API_BASE_PATH}")
 	private String supersetApiBasePath;
 
-	@Value("${SUPERSET_PRIVATE_DASHBOARD_USERNAME}")
-	private String supersetPrivateDashboardUsername;
-
-	@Value("${SUPERSET_PRIVATE_DASHBOARD_PASSWORD}")
-	private String supersetPrivateDashboardPassword;
-
-	@Value("${SUPERSET_PUBLIC_DASHBOARD_USERNAME}")
-	private String supersetPublicDashboardUsername;
-
-	@Value("${SUPERSET_PUBLIC_DASHBOARD_PASSWORD}")
-	private String supersetPublicDashboardPassword;
-
 	@Autowired
 	UserProfileService userProfileService;
-
-	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	List<MediaType> acceptableMediaTypes = new ArrayList<>();
 
@@ -72,76 +58,22 @@ public class SupersetEmbeddedService {
 		acceptableMediaTypes.add(MediaType.APPLICATION_JSON);
 	}
 
-	public Object getToken(String dashboardid) {
-
-		String username = userProfileService.getUsername();
-		User profile = userProfileService.findProfileByUsername(username);
-
-		Long roleId = profile.getRole().getId();
-
-		//TODO: Cuando se realice la integración Superset + ECOMARCAN + OpenId, comprobar acceso del usuario al dashboard específico,
-		// no de forma genérica como está ahora.
-
-		if (roleId <= 2) {
-			// Se trata de un usuario con permisos, por lo que se loguea contra superset con usuario embbeded
-			return fetchGuestToken(supersetPrivateDashboardUsername, supersetPrivateDashboardPassword, dashboardid);
-		} else if (roleId > 2 ) {
-			// Se trata de un usuario sin permisos, por lo que se loguea contra superset con usuario guest
-			return fetchGuestToken(supersetPublicDashboardUsername, supersetPublicDashboardPassword, dashboardid);
-		}
-		throw new NotAllowedException();
-	}
-
-	private Object fetchGuestToken(String user, String password, String dashboardid) {
+	public Object getGuestToken(String dashboardid, String jwtToken) {
 
 		String url = supersetApiUrl + supersetApiBasePath + "guest_token/";
 
-		String accessToken;
-
-		try {
-			accessToken = login(user, password);
-		} catch (IOException e) {
-			throw new NotAllowedException();
-		}
-
+		String username = userProfileService.getUsername();
 
 		RestTemplate restTemplate = new RestTemplate();
 
-		String body = "{\"resources\": [{\"id\": \"" + dashboardid + "\", \"type\": \"dashboard\"}], \"rls\": [], \"user\": {\"username\": \"" + user + "\"}}";
+		String body = "{\"resources\": [{\"id\": \"" + dashboardid + "\", \"type\": \"dashboard\"}], \"rls\": [], \"user\": {\"username\": \"" + username + "\"}}";
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.setAccept(acceptableMediaTypes);
-		headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
+		headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
 		HttpEntity<String> request = new HttpEntity<>(body, headers);
 
 		return restTemplate.postForObject(url, request, String.class);
-	}
-
-	private String login(String user, String password) throws IOException {
-
-		String url = supersetApiUrl + supersetApiBasePath + "login";
-
-		RestTemplate restTemplate = new RestTemplate();
-
-		String body = "{\"username\": \"" + user
-			+ "\", \"password\": \"" + password
-			+ "\", \"provider\": \"db\", \"refresh\": \"true\"}";
-
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
-		headers.setAccept(acceptableMediaTypes);
-		HttpEntity<String> request = new HttpEntity<>(body, headers);
-
-		String response = restTemplate.postForObject(url, request, String.class);
-
-		if (response != null) {
-
-			JsonNode root = objectMapper.readTree(response);
-			String accessToken = root.path("access_token").asText();
-			return (accessToken != null) ? accessToken : null;
-		} else {
-			throw new NotAllowedException();
-		}
 	}
 }

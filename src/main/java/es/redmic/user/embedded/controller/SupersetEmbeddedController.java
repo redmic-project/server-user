@@ -1,6 +1,7 @@
 package es.redmic.user.embedded.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 /*-
@@ -24,7 +25,7 @@ import org.springframework.web.bind.annotation.PathVariable;
  */
 
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import es.redmic.user.embedded.service.SupersetEmbeddedService;
@@ -41,9 +42,9 @@ public class SupersetEmbeddedController {
 		this.service = service;
 	}
 
-	@RequestMapping(value = "/get-token/{dashboardid}", method = RequestMethod.GET)
-	public Object getToken(@PathVariable("dashboardid") String dashboardid) {
+	@GetMapping(value = "/get-token/{dashboardid}")
+	public Object getToken(@PathVariable("dashboardid") String dashboardid, @RequestParam(value = "token", required = true) String jwtToken) {
 
-		return service.getToken(dashboardid);
+		return service.getGuestToken(dashboardid, jwtToken);
 	}
 }
