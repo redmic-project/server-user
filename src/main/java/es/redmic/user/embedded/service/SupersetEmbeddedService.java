@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -64,6 +65,8 @@ public class SupersetEmbeddedService {
 
 		String username = userProfileService.getUsername();
 
+		String csrfToken = getCSRFToken(jwtToken);
+
 		RestTemplate restTemplate = new RestTemplate();
 
 		String body = "{\"resources\": [{\"id\": \"" + dashboardid + "\", \"type\": \"dashboard\"}], \"rls\": [], \"user\": {\"username\": \"" + username + "\"}}";
@@ -71,9 +74,32 @@ public class SupersetEmbeddedService {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.setAccept(acceptableMediaTypes);
+		headers.set("X-CSRFToken", csrfToken);
 		headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
 		HttpEntity<String> request = new HttpEntity<>(body, headers);
 
 		return restTemplate.postForObject(url, request, String.class);
+	}
+
+	private String getCSRFToken(String jwtToken) {
+
+		String url = supersetApiUrl + supersetApiBasePath + "csrf_token";
+
+		RestTemplate restTemplate = new RestTemplate();
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setAccept(acceptableMediaTypes);
+		headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
+		HttpEntity<String> request = new HttpEntity<>(headers);
+
+		String response = restTemplate.exchange(url, HttpMethod.GET, request, String.class).getBody();
+
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			JsonNode root = mapper.readTree(response);
+			return root.path("result").asText();
+		} catch (IOException e) {
+			throw new RuntimeException("Error parsing CSRF token response", e);
+		}
 	}
 }
