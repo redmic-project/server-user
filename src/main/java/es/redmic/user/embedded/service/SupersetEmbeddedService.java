@@ -75,6 +75,7 @@ public class SupersetEmbeddedService {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.setAccept(acceptableMediaTypes);
 		headers.set("X-CSRFToken", csrfToken);
+		headers.set(HttpHeaders.REFERER, supersetApiUrl);
 		headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
 		HttpEntity<String> request = new HttpEntity<>(body, headers);
 
