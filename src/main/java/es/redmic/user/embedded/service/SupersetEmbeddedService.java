@@ -83,7 +83,7 @@ public class SupersetEmbeddedService {
 
 	private String getCSRFToken(String jwtToken) {
 
-		String url = supersetApiUrl + supersetApiBasePath + "csrf_token";
+		String url = supersetApiUrl + supersetApiBasePath + "csrf_token/";
 
 		RestTemplate restTemplate = new RestTemplate();
 
