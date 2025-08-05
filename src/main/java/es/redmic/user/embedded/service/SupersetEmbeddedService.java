@@ -16,8 +16,6 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import es.redmic.exception.security.NotAllowedException;
-import es.redmic.user.manager.model.User;
 import es.redmic.user.manager.service.UserProfileService;
 
 /*-
@@ -79,7 +77,17 @@ public class SupersetEmbeddedService {
 		headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
 		HttpEntity<String> request = new HttpEntity<>(body, headers);
 
-		return restTemplate.postForObject(url, request, String.class);
+		String response;
+
+		try {
+			response = restTemplate.postForObject(url, request, String.class);
+		} catch (org.springframework.web.client.HttpClientErrorException e) {
+			// Error 4xx
+			e.printStackTrace();
+			throw new RuntimeException("Client error when requesting guest token: " + e.getStatusCode(), e);
+		}
+
+		return response;
 	}
 
 	private String getCSRFToken(String jwtToken) {
@@ -93,8 +101,15 @@ public class SupersetEmbeddedService {
 		headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
 		HttpEntity<String> request = new HttpEntity<>(headers);
 
-		String response = restTemplate.exchange(url, HttpMethod.GET, request, String.class).getBody();
+		String response;
 
+		try {
+			response = restTemplate.exchange(url, HttpMethod.GET, request, String.class).getBody();
+		} catch (org.springframework.web.client.HttpClientErrorException e) {
+			// Error 4xx
+			e.printStackTrace();
+			throw new RuntimeException("Client error when requesting CSRF token: " + e.getStatusCode(), e);
+		}
 		try {
 			ObjectMapper mapper = new ObjectMapper();
 			JsonNode root = mapper.readTree(response);
